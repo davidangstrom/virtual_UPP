@@ -14,7 +14,7 @@ class Network:
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.setblocking(1)
         #self.client.settimeout()
-        self.server = "192.168.10.148"
+        self.server = "92.35.28.148"
         self.port = 5555
         self.addr = (self.server, self.port)
         #self.player = self.connect()

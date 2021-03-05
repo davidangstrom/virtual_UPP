@@ -29,8 +29,6 @@ pygame.init()
 win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 win.fill((0,0,0))
 
-print_lock = threading.Lock()
-
 def draw_and_receive(win, main_p, v_stream, ge, n):
     win.fill((0,0,0))
     #print_lock.acquire()
@@ -40,22 +38,19 @@ def draw_and_receive(win, main_p, v_stream, ge, n):
             for p in reply[0].values():      
                 if p.id != main_p.id:
                     p.render(win)
-            v_stream.write(reply[1])
-        #print_lock.release()
+
+            for v in reply[1]:
+                v_stream.write(v)
     except Exception as e:
-        print("is MARK here", e) #oh hi mark
-        #print_lock.release()
+        print("is MARK here", e) #oh hi mark, sometimes spits out invalid load key, not sure why.
         pass
 
 def main():
     run = True
     n = Network()
-    #start_pos = n.connect()
-    main_player = n.connect()# Player(start_pos[0], start_pos[1], 0)
+    main_player = n.connect()
 
     clock = pygame.time.Clock()
-
-    other_players = []
 
     p = pyaudio.PyAudio()
     playing_stream = p.open(format=audio_format, channels=channels,\
@@ -86,6 +81,5 @@ def main():
 
         main_player.render(win)
         pygame.display.update()
-        #playing_stream.write(reply[1])
 
 main()

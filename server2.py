@@ -14,6 +14,8 @@ BUFFERSIZE = 2048 * 3
 START_POS = (100,100)
 
 server = "192.168.10.148"
+#server = "92.35.28.148"
+#server = "0.0.0.0"
 port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -34,6 +36,9 @@ print("waiting for connection")
 players = {}
 connections = {}
 
+voice = {}
+prev_sent_voice = {}
+
 def threaded_client(conn, current_player):
     new_player = Player(START_POS[0], START_POS[1], current_player)
     conn.send(pickle.dumps(new_player))
@@ -44,6 +49,8 @@ def threaded_client(conn, current_player):
         try:
             #rec = conn.recv(BUFFERSIZE)
             data = pickle.loads(conn.recv(BUFFERSIZE))
+            voice[current_player] = data[3]
+
             #reply = data.decode("utf-8")
             if not data:
                 print("Disconnected")
@@ -56,7 +63,18 @@ def threaded_client(conn, current_player):
             #[1] = x
             #[2] = y
             #[3] = voice stream
-            conn.send(pickle.dumps([players, data[3]])) #How does this wörk??
+            send_v = []
+            for v in voice:
+                if v != current_player:
+                    if v in prev_sent_voice:
+                        if voice[v] != prev_sent_voice[v]:
+                            send_v.append(voice[v])
+                            prev_sent_voice[v] = voice[v]
+                    else:
+                        send_v.append(voice[v])
+                        prev_sent_voice[v] = voice[v]
+                    
+            conn.send(pickle.dumps([players, send_v]))
         except Exception as e:
             print(e)
             break
