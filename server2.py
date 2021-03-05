@@ -7,6 +7,7 @@ import time
 import sys
 from _thread import *
 from player import Player
+import threading
 
 
 BUFFERSIZE = 2048 * 3
@@ -33,12 +34,11 @@ print("waiting for connection")
 players = {}
 connections = {}
 
-
 def threaded_client(conn, current_player):
     new_player = Player(START_POS[0], START_POS[1], current_player)
     conn.send(pickle.dumps(new_player))
     players[current_player] = new_player
-    #conn.setblocking(0)
+    conn.setblocking(1)
     reply = ""
     while True:
         try:
@@ -49,7 +49,6 @@ def threaded_client(conn, current_player):
                 print("Disconnected")
                 break
             
-            print(players[current_player].x)
             players[current_player].x = data[1]
             players[current_player].y = data[2]
             players[current_player].rect = (data[1], data[2], 20, 20)
@@ -57,11 +56,7 @@ def threaded_client(conn, current_player):
             #[1] = x
             #[2] = y
             #[3] = voice stream
-            for connection in connections.values():
-                temp = pickle.dumps([players, data[3]])
-                connection.send(temp)
-
-            #conn.sendall(str.encode(reply))
+            conn.send(pickle.dumps([players, data[3]])) #How does this wörk??
         except Exception as e:
             print(e)
             break

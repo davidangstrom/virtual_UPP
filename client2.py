@@ -4,8 +4,10 @@ import socket
 import select
 import pickle
 import pyaudio
+import threading
 from Network import Network
 from player import Player
+from _thread import *
 
 import pygame
 import sys
@@ -27,10 +29,23 @@ pygame.init()
 win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 win.fill((0,0,0))
 
-def redraw_window(win, main_player):
-    #win.fill((0,0,0))
-    main_player.render(win)
-    #pygame.display.update()
+print_lock = threading.Lock()
+
+def draw_and_receive(win, main_p, v_stream, ge, n):
+    win.fill((0,0,0))
+    #print_lock.acquire()
+    try:
+        reply = n.send(ge)
+        if reply:
+            for p in reply[0].values():      
+                if p.id != main_p.id:
+                    p.render(win)
+            v_stream.write(reply[1])
+        #print_lock.release()
+    except Exception as e:
+        print("is MARK here", e) #oh hi mark
+        #print_lock.release()
+        pass
 
 def main():
     run = True
@@ -38,7 +53,6 @@ def main():
     #start_pos = n.connect()
     main_player = n.connect()# Player(start_pos[0], start_pos[1], 0)
 
-    print(main_player.x)
     clock = pygame.time.Clock()
 
     other_players = []
@@ -48,9 +62,8 @@ def main():
         rate=rate, output=True, frames_per_buffer=S_BUFF)
     recording_stream = p.open(format=audio_format, channels=channels,\
         rate=rate, input=True, frames_per_buffer=S_BUFF)
-
     while run:
-        clock.tick(5000)
+        clock.tick(144)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -68,15 +81,10 @@ def main():
         ge = ['position update', main_player.x, main_player.y, voice]
 
         #print("size of voice stream", sys.getsizeof(voice))
-        reply = n.send(ge)
+        #start_new_thread(draw_and_receive, (win, main_player, playing_stream, ge, n))
+        draw_and_receive(win, main_player, playing_stream, ge, n)
 
-        win.fill((0,0,0))
-        for p in reply[0].values():
-            redraw_window(win, main_player)
-            if p.id != main_player.id:
-                playing_stream.write(reply[1])
-                p.render(win)
-                print(p.x)
+        main_player.render(win)
         pygame.display.update()
         #playing_stream.write(reply[1])
 
