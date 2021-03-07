@@ -14,7 +14,8 @@ class Network:
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.setblocking(1)
         #self.client.settimeout()
-        self.server = "92.35.28.148"
+        #self.server = "92.35.28.148"
+        self.server = "192.168.10.148"
         self.port = 5555
         self.addr = (self.server, self.port)
         #self.player = self.connect()
@@ -27,9 +28,8 @@ class Network:
             try:
                 self.client.connect(self.addr)
                 return pickle.loads(self.client.recv(BUFFERSIZE))
-            except:
-                print(sys.exc_info()[0:1])
-                print("maybe here0")
+            except Exception as e:
+                print("maybe here ", e)
                 pass
     
     def send(self, data):

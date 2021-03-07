@@ -6,16 +6,29 @@ import pickle
 import time
 import sys
 from _thread import *
-from player import Player
 import threading
+
+class Player():
+    def __init__(self, x, y, id):
+        self.x = x
+        self.y = y
+        self.height = 48
+        self.width = 64
+        self.rect = (x,y, self.width, self.height)
+        self.id = id
+        self.vel = 50
+        self.current_move = 0
+        self.last_move = 0 #0 = down, 1 = left, 2 = right, 3 = up
+        self.move_counter = 0
+        self.idle = True
 
 
 BUFFERSIZE = 2048 * 3
 START_POS = (100,100)
 
-server = "192.168.10.148"
+#server = "192.168.10.148"
 #server = "92.35.28.148"
-#server = "0.0.0.0"
+server = "0.0.0.0"
 port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -49,20 +62,24 @@ def threaded_client(conn, current_player):
         try:
             #rec = conn.recv(BUFFERSIZE)
             data = pickle.loads(conn.recv(BUFFERSIZE))
-            voice[current_player] = data[3]
+            voice[current_player] = data[2]
 
             #reply = data.decode("utf-8")
             if not data:
                 print("Disconnected")
                 break
             
-            players[current_player].x = data[1]
-            players[current_player].y = data[2]
-            players[current_player].rect = (data[1], data[2], 20, 20)
+            #players[current_player].x = data[1].x
+            #players[current_player].y = data[1].y
+            #players[current_player].rect = (data[1].x, data[1].y, 48, 64)
+            #players[current_player].current_move = data[1].current_move
+
+            players[current_player]  = data[1]
+
             #print ("x: ", data[1], " y: ", data[2])
-            #[1] = x
-            #[2] = y
-            #[3] = voice stream
+            #[1] = message, currently not needed.
+            #[2] = Player.
+            #[3] = voice stream.
             send_v = []
             for v in voice:
                 if v != current_player:
