@@ -38,7 +38,7 @@ voice = {}
 prev_sent_voice = {}
 
 def threaded_client(conn, current_player):
-    new_player = Player(START_POS[0], START_POS[1], current_player)
+    new_player = Player(START_POS[0], START_POS[1], current_player, 0)
     conn.send(pickle.dumps(new_player))
     players[current_player] = new_player
     conn.setblocking(1)
