@@ -18,7 +18,7 @@ with open("resources/map_sprites/map.txt") as f:
     map_tiles = [line[:-1] for line in f]
     map_tiles = [int(item) for sublist in map_tiles for item in sublist]
 
-print(len(map_tiles))
+#print(len(map_tiles))
 map_sprites = Spritesheet("resources/map_sprites/TheLostDungeonGrey.png")
 sprite_1 = map_sprites.get_sprite(16,0,16,16)
 sprite_2 = map_sprites.get_sprite(0,0,16,16)

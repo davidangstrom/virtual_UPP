@@ -7,24 +7,10 @@ import time
 import sys
 from _thread import *
 import threading
-#from player import Player
-
-
-class Player():
-    def __init__(self, x, y, id):
-        self.x = x
-        self.y = y
-        self.height = 48
-        self.width = 64
-        self.rect = (x,y, self.width, self.height)
-        self.id = id
-        self.vel = 7
-        self.current_move = 0
-        self.last_move = 0 #0 = down, 1 = left, 2 = right, 3 = up
-        self.move_counter = 0
-        self.idle = True
+from player import Player
 
 BUFFERSIZE = 8192
+#BUFFERSIZE = 8400
 START_POS = (100,100)
 
 #server = "192.168.10.148"
@@ -60,7 +46,7 @@ def threaded_client(conn, current_player):
     while True:
         try:
             rec = conn.recv(BUFFERSIZE)
-            print(sys.getsizeof(rec))
+            #print("size of received data: ", sys.getsizeof(rec))
             data = pickle.loads(rec)
             voice[current_player] = data[2]
 

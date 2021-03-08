@@ -9,6 +9,7 @@ import struct
 import time
 
 BUFFERSIZE = 8192
+#BUFFERSIZE = 8400
 
 class Network:
     def __init__(self):
@@ -37,7 +38,7 @@ class Network:
         self.client.setblocking(0) #Data may or may not have been sent from server, cases are handled in client.
         data = pickle.dumps(data)
         try:
-            print(sys.getsizeof(data))
+            #print("size of sent data: ",sys.getsizeof(data))
             self.client.send(data)
             temp = self.client.recv(BUFFERSIZE)
             return pickle.loads(temp)
