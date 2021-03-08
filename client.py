@@ -11,12 +11,13 @@ from spritesheet import Spritesheet
 
 SCREEN_WIDTH = 1600
 SCREEN_HEIGHT = 800
-BUFFERSIZE = 2048 * 3
+BUFFERSIZE = 8192
 S_BUFF = 2048
 
 audio_format = pyaudio.paInt16
 channels = 1
 rate = 20000
+silence = chr(0)*S_BUFF*channels*2 
 
 pygame.init()
 canvas = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -43,7 +44,10 @@ def draw_and_receive(win, main_p, map, v_stream, ge, n, pressed, all_p):
                     pygame.display.update()
 
             for v in reply[1]:
-                v_stream.write(v)
+                if v == '':
+                    v_stream.write(silence)
+                else:
+                    v_stream.write(v)
         else:
             map.draw_map(win)
             main_p.update(win, pressed)

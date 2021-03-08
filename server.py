@@ -24,7 +24,7 @@ class Player():
         self.move_counter = 0
         self.idle = True
 
-BUFFERSIZE = 2048 * 3
+BUFFERSIZE = 8192
 START_POS = (100,100)
 
 #server = "192.168.10.148"
@@ -59,8 +59,9 @@ def threaded_client(conn, current_player):
     reply = ""
     while True:
         try:
-            #rec = conn.recv(BUFFERSIZE)
-            data = pickle.loads(conn.recv(BUFFERSIZE))
+            rec = conn.recv(BUFFERSIZE)
+            print(sys.getsizeof(rec))
+            data = pickle.loads(rec)
             voice[current_player] = data[2]
 
             #reply = data.decode("utf-8")
