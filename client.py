@@ -6,31 +6,38 @@ import pickle
 import pyaudio
 import threading
 import wave
+import subprocess
+from globals import *
 from array import array
 from Network import Network
 from _thread import *
 from spritesheet import Spritesheet
-
-SCREEN_WIDTH = 1600
-SCREEN_HEIGHT = 800
-BUFFERSIZE = 8192
-#BUFFERSIZE = 8400
-
-
-S_BUFF = 2048
-audio_format = pyaudio.paInt16
-channels = 1
-rate = 44100
-silence = chr(0)*S_BUFF*channels*2 
-THRESHOLD = 100
 
 pygame.init()
 canvas = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('chat room') 
 
+def background_music(filename, menu):
+    p_music = pyaudio.PyAudio()
+    background = wave.open(filename, 'rb')
+    music_playing_stream = p_music.open(rate = background.getframerate(),
+    channels = background.getnchannels(),
+    format = p_music.get_format_from_width(background.getsampwidth()),
+    output = True,
+    frames_per_buffer = 1024)
+    background = wave.open(filename)
+    data = background.readframes(S_BUFF)
+    while not menu.char_selected:
+        music_playing_stream.write(data)
+        data = background.readframes(S_BUFF)
+        if data == b'':
+            background.rewind()
+            data = background.readframes(S_BUFF)
+
 from menu import Menu
 m = Menu()
+start_new_thread(background_music, ("resources/music/hissmusik.wav", m))
 while not m.done:
     m.draw_menu(win)
     pressed_keys = pygame.key.get_pressed()
@@ -64,70 +71,41 @@ while not m.char_selected:
             chosen_char = m.update_character_sel(pressed_keys)
             wait = False
 
-  
-  
+
 from map import Map
 from player import Player #These had to be imported after pygame.display for converting images
 
 def draw_and_receive(win, main_p, map, v_stream, ge, n, pressed, all_p):
     map.draw_map(win)
     main_p.update(win, pressed) 
+    reply = n.send(ge)
+    if reply != None:
+        all_p = reply[0]
+        for p in all_p.values():
+            if p.id != main_p.id:
+                p.render(win)
+        pygame.display.update()
 
-    try:
-        reply = n.send(ge)
-        if reply != None:
-            all_p = reply[0]
-            for loc_p in all_p:
-                if loc_p not in reply[0]:
-                    del all_p[loc_p]
-            for p in all_p.values():
-                if p.id != main_p.id:
-                    p.render(win)
-                    pygame.display.update()
+        for v in reply[1]:
+            #little endian
+            snd_data = array('h', v)
+            if sys.byteorder == "big":
+                snd_data.byteswap()
+            
+            if max(snd_data) < THRESHOLD:
+                v_stream.write(silence)
+            else:
+                v_stream.write(v)
+    else:
+        for p in all_p:
+            p.render(win)
+        map.draw_map(win)
+        main_p.update(win, pressed)
+        pygame.display.update()
 
-            for v in reply[1]:
-                """
-                #little endian
-                snd_data = array('h', v)
-                if sys.byteorder == "big":
-                    snd_data.byteswap()
-                
-                if max(snd_data) < THRESHOLD:
-                    v_stream.write(silence)
-                else:
-                    v_stream.write(v)
-                """
-                if v == '':
-                    v_stream.write(silence)
-                    #print(v_stream.get_write_available())
-                else:
-                    v_stream.write(v)
-                
-        else:
-            map.draw_map(win)
-            main_p.update(win, pressed)
-            pygame.display.update()
-
-    except Exception as e:
-        print("is MARK here", e) #oh hi mark, sometimes spits out invalid load key, not sure why.
-        pass
-
-def background_music(filename):
-    p_music = pyaudio.PyAudio()
-    background = wave.open(filename, 'rb')
-    music_playing_stream = p_music.open(rate = background.getframerate(),
-    channels = background.getnchannels(),
-    format = p_music.get_format_from_width(background.getsampwidth()),
-    output = True,
-    frames_per_buffer = 1024)
-    background = wave.open(filename)
-    data = background.readframes(S_BUFF)
-    while True:
-        music_playing_stream.write(data)
-        data = background.readframes(S_BUFF)
-        if data == b'':
-            background.rewind()
-            data = background.readframes(S_BUFF)
+    #except Exception as e:
+    #    print("is MARK here", e) #oh hi mark, sometimes spits out invalid load key, not sure why.
+    #    pass                     #Nowadays seems to spit out 0 for for some reason.
 
 
 def main():
@@ -135,10 +113,11 @@ def main():
 
     n = Network()
     player_tup = n.connect()
-
     main_player = Player(player_tup.x, player_tup.y, player_tup.id, chosen_char)
-    main_player.load_images()
+    main_player.load_helper()
 
+    print("sending data")
+    n.send(chosen_char) #have to tell server which chosen char for first iteration.
     map = Map()
     map.draw_map(win)
 
@@ -151,9 +130,6 @@ def main():
         rate=rate, output=True, frames_per_buffer=S_BUFF)
     recording_stream = p.open(format=audio_format, channels=channels,\
         rate=rate, input=True, frames_per_buffer=S_BUFF)
-
-    start_new_thread(background_music, ("resources/music/hissmusik.wav",))
- 
 
     all_players = {}
     while run:

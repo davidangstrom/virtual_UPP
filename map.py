@@ -63,4 +63,3 @@ class Map:
                     win.blit(sprite_9, (x, y))
                 counter+=1
                 #print(counter)
-                

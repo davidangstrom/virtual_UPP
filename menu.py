@@ -1,25 +1,10 @@
 import pygame
-from pygame.constants import K_KP_ENTER
+from globals import *
 from spritesheet import Spritesheet
-SCREEN_WIDTH = 1600
-SCREEN_HEIGHT = 800
 
 player_sprites = {}
 for i in range(1,26):
     player_sprites[i] = Spritesheet("resources/player_sprites/{}.png".format(i)).get_sprite(0, 0, 48, 64)
-
-
-from pygame.locals import (
-    K_UP,
-    K_DOWN,
-    K_LEFT,
-    K_RIGHT,
-    K_ESCAPE,
-    KEYDOWN,
-    QUIT,
-    K_RETURN,
-    K_KP_ENTER
-)
 
 class Menu:
     def __init__(self):

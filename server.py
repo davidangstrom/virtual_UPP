@@ -8,9 +8,8 @@ import sys
 from _thread import *
 import threading
 from player import Player
+from globals import *
 
-BUFFERSIZE = 8192
-#BUFFERSIZE = 8400
 START_POS = (100,100)
 
 #server = "192.168.10.148"
@@ -23,7 +22,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     s.bind((server, port))
 except socket.error as e:
-    str(e)
+    print(e)
 
 
 s.listen()
@@ -38,8 +37,19 @@ voice = {}
 prev_sent_voice = {}
 
 def threaded_client(conn, current_player):
-    new_player = Player(START_POS[0], START_POS[1], current_player, 0)
-    conn.send(pickle.dumps(new_player))
+    conn.send(pickle.dumps(Player(START_POS[0], START_POS[1], current_player, 0))) #Connection accepted, send starting pos
+    try:
+        rec = conn.recv(BUFFERSIZE) #Wait for first send which is the selected char
+    except Exception as e:
+        print(e)
+        del connections[current_player]
+        conn.close()
+        return None
+
+    else:
+        chosen_char = pickle.loads(rec)
+        new_player = Player(START_POS[0], START_POS[1], current_player, chosen_char) #append this to players
+
     players[current_player] = new_player
     conn.setblocking(1)
     reply = ""
@@ -57,15 +67,14 @@ def threaded_client(conn, current_player):
 
             players[current_player] = data[1]
 
-            #print ("x: ", data[1], " y: ", data[2])
-            #[1] = message, currently not needed.
-            #[2] = Player.
-            #[3] = voice stream.
+            #[0] = message, currently not used
+            #[1] = player
+            #[2] = voice
             send_v = []
             for v in voice:
                 if v != current_player:
                     if v in prev_sent_voice:
-                        if voice[v] != prev_sent_voice[v]:
+                        if voice[v] != prev_sent_voice[v]: #or not players[v].muted:
                             send_v.append(voice[v])
                             prev_sent_voice[v] = voice[v]
                     else:

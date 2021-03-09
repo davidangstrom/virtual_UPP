@@ -5,11 +5,8 @@ import select
 import pickle
 import pyaudio
 import struct
-
 import time
-
-BUFFERSIZE = 8192
-#BUFFERSIZE = 8400
+from globals import *
 
 class Network:
     def __init__(self):
