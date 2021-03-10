@@ -28,7 +28,7 @@ class Network:
                 self.client.connect(self.addr)
                 return pickle.loads(self.client.recv(BUFFERSIZE))
             except Exception as e:
-                print("maybe here ", e)
+                print("maybe here ", e) #TODO: Take care of case where server is down
                 pass
     
     def send(self, data):

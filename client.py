@@ -6,7 +6,7 @@ import pickle
 import pyaudio
 import threading
 import wave
-import subprocess
+import numpy as np
 from globals import *
 from array import array
 from Network import Network
@@ -37,7 +37,7 @@ def background_music(filename, menu):
 
 from menu import Menu
 m = Menu()
-start_new_thread(background_music, ("resources/music/hissmusik.wav", m))
+start_new_thread(background_music, ("resources/music/hissmusik1.wav", m))
 while not m.done:
     m.draw_menu(win)
     pressed_keys = pygame.key.get_pressed()
@@ -75,6 +75,16 @@ while not m.char_selected:
 from map import Map
 from player import Player #These had to be imported after pygame.display for converting images
 
+def gensin(frequency, duration, sampRate):
+    
+    """ Frequency in Hz, duration in seconds and sampleRate
+        in Hz"""
+
+    cycles = np.linspace(0,duration*2*np.pi,num=duration*sampRate)
+    wave = np.sin(cycles*frequency,dtype='float32')
+    t = np.divide(cycles,2*np.pi)
+
+
 def draw_and_receive(win, main_p, map, v_stream, ge, n, pressed, all_p):
     map.draw_map(win)
     main_p.update(win, pressed) 
@@ -109,8 +119,6 @@ def draw_and_receive(win, main_p, map, v_stream, ge, n, pressed, all_p):
 
 
 def main():
-    run = True
-
     n = Network()
     player_tup = n.connect()
     main_player = Player(player_tup.x, player_tup.y, player_tup.id, chosen_char)
@@ -132,14 +140,13 @@ def main():
         rate=rate, input=True, frames_per_buffer=S_BUFF)
 
     all_players = {}
+    run = True
     while run:
         clock.tick(60)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-                pygame.quit()
-                sys.exit()
 
         #main_player.render(win)
 
@@ -153,3 +160,5 @@ def main():
 
 
 main()
+pygame.quit()
+sys.exit()
