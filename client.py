@@ -74,16 +74,6 @@ while not m.char_selected:
 from map import Map
 from player import Player #These had to be imported after pygame.display for converting images
 
-def gensin(frequency, duration, sampRate):
-    
-    """ Frequency in Hz, duration in seconds and sampleRate
-        in Hz"""
-
-    cycles = np.linspace(0,duration*2*np.pi,num=duration*sampRate)
-    wave = np.sin(cycles*frequency,dtype='float32')
-    t = np.divide(cycles,2*np.pi)
-
-
 def draw_and_receive(win, main_p, map, v_stream, ge, n, pressed, all_p):
     map.draw_map(win)
     main_p.update(win, pressed) 
