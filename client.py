@@ -6,7 +6,6 @@ import pickle
 import pyaudio
 import threading
 import wave
-import numpy as np
 from globals import *
 from array import array
 from Network import Network
