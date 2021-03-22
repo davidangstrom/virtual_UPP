@@ -56,13 +56,9 @@ def threaded_client(conn, current_player):
     reply = ""
     while True:
         try:
-            data_arr = []
-            while True:
-                rec = conn.recv(BUFFERSIZE)
-                if not rec: break
-                data_arr.append(rec)
-            #print("size of received data: ", sys.getsizeof(rec))
-            data = pickle.loads(b"".join(data_arr))
+            rec = conn.recv(BUFFERSIZE)
+        
+            data = pickle.loads(rec)
             voice[current_player] = data[2]
 
             #reply = data.decode("utf-8")
