@@ -7,6 +7,7 @@ BUFFERSIZE = 8192
 
 S_BUFF = 256 * 6
 rate = 44100
+#audio_format = pyaudio.paInt16
 audio_format = pyaudio.paInt16
 channels = 1
 

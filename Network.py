@@ -13,7 +13,7 @@ class Network:
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.setblocking(1)
         #self.client.settimeout()
-        self.server = "92.35.28.148"
+        self.server = "92.35.15.75"
         #self.server = "192.168.10.148"
         self.port = 5555
         self.addr = (self.server, self.port)
@@ -38,7 +38,8 @@ class Network:
             #print("size of sent data: ",sys.getsizeof(data))
             self.client.send(data)
             temp = self.client.recv(BUFFERSIZE)
+
             return pickle.loads(temp)
         except socket.error as e:
-            print("here", e)
+            #print("here", e)
             return None
